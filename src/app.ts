@@ -12,6 +12,8 @@ import * as cors from 'cors';
 const protect = require('@risingstack/protect');
 
 import index from './routes/index';
+import contractRoute from './routes/contracts';
+import stdRoute from './routes/standard';
 
 const app: express.Express = express();
 
@@ -23,7 +25,7 @@ app.set('view engine', 'pug');
 //app.use(favicon(path.join(__dirname,'public','favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(cors());
@@ -65,6 +67,8 @@ app.use((req, res, next) => {
 });
 
 // Routing
+app.use('/standard', stdRoute);
+app.use('/contracts', contractRoute);
 app.use('/', index);
 
 app.use((req, res, next) => {
