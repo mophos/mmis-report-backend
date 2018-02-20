@@ -86,7 +86,7 @@ router.get('/search/labelers', async (req, res, next) => {
 router.get('/search/products/autocomplete', async (req, res, next) => {
   let db = req.db;
   let query = req.query.q;
-  let vendorId = req.query.vendorId;
+  let vendorId = req.query.vendorId === 'undefined' || req.query.vendorId === null ? null : req.query.vendorId;
 
   try {
     let rs: any = await stdModel.searchProductAutoComplete(db, query, vendorId);

@@ -16,7 +16,7 @@ export default class ContractModel {
   removeContract(db: Knex, contractId: any) {
     return db('cm_contracts')
       .where('contract_id', contractId)
-      .update({ is_cancel: 'Y' });
+      .update({ contract_status: 'CANCEL' });
   }
 
   saveContractDetail(db: Knex, products: any) {
@@ -30,7 +30,7 @@ export default class ContractModel {
       .del();
   }
 
-  getList(db: Knex, query: any, limit: number = 20, offset: number = 0) {
+  getList(db: Knex, query: any, limit: number, offset: number, status: any = 'PREPARE') {
 
     let subQuery = db('cm_contract_detail as d')
       .select(db.raw('sum(qty*cost)'))
@@ -38,10 +38,38 @@ export default class ContractModel {
       .as('total_price');
 
     let sql = db('cm_contracts as cm')
-      .select('cm.*', 'l.labeler_name', 'bg.bgtype_name', 'cs.status_name', subQuery)
+      .select('cm.*', 'l.labeler_name', 'bg.bgtype_name', subQuery)
       .innerJoin('mm_labelers as l', 'l.labeler_id', 'cm.labeler_id')
       .innerJoin('bm_bgtype as bg', 'bg.bgtype_id', 'cm.bgtype_id')
-      .leftJoin('cm_status as cs', 'cs.status_id', 'cm.status_id')
+      // .leftJoin('cm_status as cs', 'cs.status_id', 'cm.status_id')
+      .orderBy('cm.prepare_no', 'desc');
+
+    if (query) {
+      let _query = `${query}%`;
+      sql.where(w => {
+        w.where('l.labeler_name', 'like', _query)
+          .orWhere('cm.contract_no', query)
+          .orWhere('cm.contract_id', query)
+      });
+    }
+
+    if (status !== 'ALL') {
+      sql.where('cm.contract_status', status);
+    }
+
+    sql.limit(limit)
+    sql.offset(offset);
+
+    return sql;
+  }
+
+  getTotal(db: Knex, query: any, status: any = 'PREPARE') {
+
+    let sql = db('cm_contracts as cm')
+      .select(db.raw('count(*) as total'))
+      .innerJoin('mm_labelers as l', 'l.labeler_id', 'cm.labeler_id')
+      .innerJoin('bm_bgtype as bg', 'bg.bgtype_id', 'cm.bgtype_id')
+      // .leftJoin('cm_status as cs', 'cs.status_id', 'cm.status_id')
       .orderBy('cm.create_date');
 
     if (query) {
@@ -53,28 +81,8 @@ export default class ContractModel {
       });
     }
 
-    sql.limit(limit)
-    sql.offset(offset);
-
-    return sql;
-  }
-
-  getTotal(db: Knex, query: any = null) {
-
-    let sql = db('cm_contracts as cm')
-      .select(db.raw('count(*) as total'))
-      .innerJoin('mm_labelers as l', 'l.labeler_id', 'cm.labeler_id')
-      .innerJoin('bm_bgtype as bg', 'bg.bgtype_id', 'cm.bgtype_id')
-      .leftJoin('cm_status as cs', 'cs.status_id', 'cm.status_id')
-      .orderBy('cm.create_date');
-
-    if (query) {
-      let _query = `${query}%`;
-      sql.where(w => {
-        w.where('l.labeler_name', 'like', _query)
-          .orWhere('cm.contract_no', query)
-          .orWhere('cm.contract_id', query)
-      });
+    if (status !== 'ALL') {
+      sql.where('cm.contract_status', status);
     }
 
     return sql;
@@ -101,5 +109,15 @@ export default class ContractModel {
       .limit(1);
   }
 
-  
+  checkProductInContract(db: Knex, productId: any) {
+    `
+    select count(*) as total
+from cm_contract_detail as cd 
+inner join cm_contracts as ct on ct.contract_id=cd.contract_id
+where ct.contract_status<>'SUCCESS' and cd.product_id='50'
+    `
+
+    return db('cm_contract_detail as cd')
+  }
+
 }
