@@ -25,7 +25,7 @@ router.post('/', async (req, res, next) => {
       _contract.start_date = contract.startDate;
       _contract.end_date = contract.endDate;
       _contract.bid_type_id = contract.bidTypeId;
-      _contract.bgtype_id = contract.bgtypeId;
+      _contract.bgtype_id = contract.bgTypeId;
       _contract.labeler_id = contract.vendorId;
       // _contract.status_id = contract.statusId;
       _contract.remark = contract.remark;
@@ -35,8 +35,10 @@ router.post('/', async (req, res, next) => {
       _contract.contract_status = contract.isApproved === 'Y' ? 'APPROVED' : 'PREPARE';
 
       let _products = [];
+      let amount = 0;
       items.forEach(v => {
         let obj: any = {};
+        amount += +v.cost * +v.qty;
         obj.contract_id = contractId;
         obj.product_id = v.product_id;
         obj.qty = v.qty;
@@ -45,6 +47,7 @@ router.post('/', async (req, res, next) => {
         _products.push(obj);
       });
 
+      _contract.amount = amount;
       // save data
       await contractModel.saveContract(db, _contract);
       await contractModel.saveContractDetail(db, _products);
@@ -86,8 +89,10 @@ router.put('/:contractId/edit', async (req, res, next) => {
       _contract.contract_status = contract.isApproved === 'Y' ? 'APPROVED' : 'PREPARE';
 
       let _products = [];
+      let amount = 0;
       items.forEach(v => {
         let obj: any = {};
+        amount += +v.cost * +v.qty;
         obj.contract_id = contractId;
         obj.product_id = v.product_id;
         obj.qty = v.qty;
@@ -96,8 +101,11 @@ router.put('/:contractId/edit', async (req, res, next) => {
         _products.push(obj);
       });
 
-      // save data
+      // amount 
+      _contract.amount = amount;
+      // save contract data
       await contractModel.updateContract(db, contractId, _contract);
+      // save product items
       await contractModel.removeContractDetail(db, contractId);
       await contractModel.saveContractDetail(db, _products);
 
@@ -120,7 +128,7 @@ router.put('/:contractId/approved', async (req, res, next) => {
   try {
     let _contract: any = {};
     _contract.contract_status = 'APPROVED';
-    
+
     await contractModel.updateContract(db, contractId, _contract);
     res.send({ ok: true });
 
