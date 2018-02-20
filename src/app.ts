@@ -9,7 +9,12 @@ import * as bodyParser from 'body-parser';
 import Knex = require('knex');
 import { MySqlConnectionConfig } from 'knex';
 import * as cors from 'cors';
+import * as _ from 'lodash';
+
 const protect = require('@risingstack/protect');
+
+import { Jwt } from './models/jwt';
+const jwt = new Jwt();
 
 import index from './routes/index';
 import contractRoute from './routes/contracts';
@@ -66,9 +71,52 @@ app.use((req, res, next) => {
   next();
 });
 
+let checkAuth = (req, res, next) => {
+  let token: string = null;
+  if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.query && req.query.token) {
+    token = req.query.token;
+  } else {
+    token = req.body.token;
+  }
+
+  jwt.verify(token)
+    .then((decoded: any) => {
+      req.decoded = decoded;
+      next();
+    }, err => {
+      console.log(err);
+      return res.send({
+        ok: false,
+        error: 'No token provided.',
+        code: 403
+      });
+    });
+}
+
+let adminAuth = (req, res, next) => {
+  const decoded = req.decoded;
+  const accessRight = decoded.accessRight;
+  try {
+    if (accessRight) {
+      const rights = accessRight.split(',');
+      if (_.indexOf(rights, 'CM_ADMIN') > -1) {
+        next();
+      } else {
+        res.send({ ok: false, error: 'No permission found!' });
+      }
+    } else {
+      res.send({ ok: false, error: 'No permission found!' });
+    }
+  } catch (error) {
+    res.send({ ok: false, error: error.message });
+  }
+}
+
 // Routing
-app.use('/standard', stdRoute);
-app.use('/contracts', contractRoute);
+app.use('/standard', checkAuth, stdRoute);
+app.use('/contracts', checkAuth, adminAuth, contractRoute);
 app.use('/', index);
 
 app.use((req, res, next) => {
