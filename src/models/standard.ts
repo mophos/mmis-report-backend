@@ -7,10 +7,11 @@ export default class StandardModel {
     let sql = db('mm_products as mp')
       .select(db.raw('concat(mp.product_name, " (", l.labeler_name, ")") as product_name'), 'mp.product_id',
         'mp.primary_unit_id', 'mp.working_code', 'mg.working_code as generic_workign_code', 'mp.is_lot_control',
-        'mu.unit_name as primary_unit_name', 'mg.generic_name', 'mp.generic_id')
+        'mu.unit_name as primary_unit_name', 'mg.generic_name', 'mp.generic_id', 'vcmp.contract_id', 'vcmp.contract_no', 'vcmp.prepare_no')
       .leftJoin('mm_generics as mg', 'mg.generic_id', 'mp.generic_id')
       .leftJoin('mm_units as mu', 'mu.unit_id', 'mp.primary_unit_id')
       .leftJoin('mm_labelers as l', 'l.labeler_id', 'mp.v_labeler_id')
+      .leftJoin('view_cm_products_active as vcmp', 'vcmp.product_id', 'mp.product_id')
       .where(w => {
         w.where('mp.product_name', 'like', _query)
           .orWhere('mg.generic_name', 'like', _query)
