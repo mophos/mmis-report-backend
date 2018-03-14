@@ -139,6 +139,24 @@ router.put('/:contractId/approved', async (req, res, next) => {
   }
 });
 
+router.put('/:contractId/success', async (req, res, next) => {
+  let db: any = req.db;
+  let contractId: any = req.params.contractId;
+
+  try {
+    let _contract: any = {};
+    _contract.contract_status = 'SUCCESS';
+
+    await contractModel.updateContract(db, contractId, _contract);
+    res.send({ ok: true });
+
+  } catch (error) {
+    res.send({ ok: false, error: error.message });
+  } finally {
+    db.destroy();
+  }
+});
+
 router.get('/', async (req, res, next) => {
   let db = req.db;
   let limit = +req.query.limit || 20;
