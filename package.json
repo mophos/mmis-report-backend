@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app/bin/www.js",
+    "build:watch": "npx tsc -w",
     "build": "npx tsc"
   },
   "dependencies": {
