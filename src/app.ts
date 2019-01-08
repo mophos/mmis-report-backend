@@ -18,7 +18,7 @@ import { Jwt } from './models/jwt';
 const jwt = new Jwt();
 
 import index from './routes/index';
-import contractRoute from './routes/contracts';
+import reportsRoute from './routes/reports';
 import stdRoute from './routes/standard';
 
 const app: express.Express = express();
@@ -117,7 +117,7 @@ let adminAuth = (req, res, next) => {
 
 // Routing
 app.use('/standard', checkAuth, stdRoute);
-app.use('/contracts', checkAuth, adminAuth, contractRoute);
+app.use('/reports', checkAuth, reportsRoute);
 app.use('/', index);
 
 app.use((req, res, next) => {
