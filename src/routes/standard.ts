@@ -98,4 +98,15 @@ router.get('/search/products/autocomplete', async (req, res, next) => {
   }
 });
 
+router.get('/warehouses', async (req, res, next) => {
+  let db = req.db;
+  try {
+    let rs: any = await stdModel.getWarehouses(db);
+    res.send({ ok: true, rows: rs });
+  } catch (error) {
+    res.send({ ok: false, error: error.message });
+  } finally {
+    db.destroy();
+  }
+});
 export default router;

@@ -1,7 +1,7 @@
 import * as Knex from 'knex';
 
 export default class StandardModel {
-  
+
   searchProductAutoComplete(db: Knex, query: any, vendorId: any): any {
     let _query = `${query}%`;
     let sql = db('mm_products as mp')
@@ -21,9 +21,9 @@ export default class StandardModel {
       })
       .where('mp.is_active', 'Y')
       .where('mp.mark_deleted', 'N');
-  
-    if (vendorId) sql.where('mp.v_labeler_id', vendorId);  
-  
+
+    if (vendorId) sql.where('mp.v_labeler_id', vendorId);
+
     sql.orderBy('mp.product_name');
     sql.limit(10);
 
@@ -35,17 +35,17 @@ export default class StandardModel {
     return db('cm_types')
       .orderBy('type_name');
   }
-  
+
   getBgTypes(db: Knex) {
     return db('bm_bgtype')
       .orderBy('bgtype_name');
   }
-  
+
   getBidTypes(db: Knex) {
     return db('l_bid_type')
       .orderBy('bid_name');
   }
-  
+
   getStatus(db: Knex) {
     return db('cm_status')
       .orderBy('status_name');
@@ -58,11 +58,11 @@ export default class StandardModel {
         w.where('l.labeler_name', 'like', _query)
           .orWhere('l.short_code', query)
           .orWhere('l.nin', query)
-         
+
       });
-    
+
     type === 'M' ? sql.where('l.is_manufacturer', 'Y') : sql.where('l.is_vendor', 'Y');
-  
+
     return sql.limit(10);
   }
 
@@ -75,6 +75,11 @@ export default class StandardModel {
       .where('ug.is_deleted', 'N')
       .where('ug.is_active', 'Y')
       .groupByRaw('ug.generic_id, unit_generic_id');
+  }
+
+  getWarehouses(knex: Knex) {
+    return knex('wm_warehouses')
+      .orderBy('warehouse_name');
   }
 
 }

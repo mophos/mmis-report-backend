@@ -19,6 +19,7 @@ const jwt = new Jwt();
 
 import index from './routes/index';
 import reportsRoute from './routes/reports';
+import uploadsRoute from './routes/uploads';
 import stdRoute from './routes/standard';
 
 const app: express.Express = express();
@@ -118,6 +119,7 @@ let adminAuth = (req, res, next) => {
 // Routing
 app.use('/standard', checkAuth, stdRoute);
 app.use('/reports', checkAuth, reportsRoute);
+app.use('/uploads', checkAuth, uploadsRoute);
 app.use('/', index);
 
 app.use((req, res, next) => {
