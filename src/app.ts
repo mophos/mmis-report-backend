@@ -60,7 +60,7 @@ app.use((req, res, next) => {
     pool: {
       min: 0,
       max: 7,
-      afterCreate: (conn, done) => {
+      create: (conn, done) => {
         conn.query(`SET NAMES ${process.env.DB_ENCODING}`, (err) => {
           done(err, conn);
         });
