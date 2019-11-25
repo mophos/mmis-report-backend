@@ -1,33 +1,31 @@
 import * as Knex from 'knex';
 const request = require("request");
-const url = process.env.REPORT_URL;
-
-export default class ReportModel {
+export default class ReportSystemModel {
 
   list(knex: Knex) {
-    return knex('i_reports')
+    return knex('i_report_systems')
       .where('is_deleted', 'N');
   }
   listParameter(knex: Knex) {
-    return knex('i_report_parameters');
+    return knex('i_report_system_parameters');
   }
   saveHeader(knex: Knex, data) {
-    return knex('i_reports')
+    return knex('i_report_systems')
       .insert(data);
   }
   saveDetail(knex: Knex, data) {
-    return knex('i_report_details')
+    return knex('i_report_system_details')
       .insert(data);
   }
 
   remove(knex: Knex, reportId) {
-    return knex('i_reports')
+    return knex('i_report_systems')
       .update({ 'is_deleted': 'Y' })
       .where('report_id', reportId);
   }
 
   getReportInfo(knex: Knex, reportId) {
-    return knex('i_reports as r')
+    return knex('i_report_systems as r')
       .select('r.report_id', 'r.report_name', 'r.report_detail', 'r.file_name',
         'r.path', 'r.is_parameter', 'r.is_deleted', 'rd.report_detail_id',
         'rd.parameter_name', 'rd.parameter_type', 'rp.parameter_name as parameter_type_name')
@@ -40,7 +38,7 @@ export default class ReportModel {
     return new Promise((resolve: any, reject: any) => {
       var options = {
         method: 'GET',
-        url: `${url}/api/report?id=${reportId}`,
+        url: `http://localhost:8080/api/report?id=${reportId}`,
         agentOptions: {
           rejectUnauthorized: false
         },
@@ -51,34 +49,6 @@ export default class ReportModel {
           'content-type': 'application/json'
         },
         json: true
-      };
-
-      request(options, function (error, response, body) {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(body);
-        }
-      });
-    });
-
-  }
-
-  generateReportParameter(reportId, data) {
-    return new Promise((resolve: any, reject: any) => {
-      var options = {
-        method: 'POST',
-        url: `${url}/api/report`,
-        agentOptions: {
-          rejectUnauthorized: false
-        },
-        headers:
-        {
-          'cache-control': 'no-cache',
-          'content-type': 'application/x-www-form-urlencoded'
-        },
-        json: true,
-        form: data
       };
 
       request(options, function (error, response, body) {

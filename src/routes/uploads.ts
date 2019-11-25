@@ -9,7 +9,7 @@ import * as fse from 'fs-extra';
 import * as multer from 'multer';
 
 // const uploadDir = 'public/uploads';
-const uploadDir = process.env.REPORT_DATA;
+const uploadDir = process.env.REPORT_JRXML;
 fse.ensureDirSync(uploadDir);
 
 var storage = multer.diskStorage({
@@ -28,9 +28,10 @@ let upload = multer({ storage: storage })
 router.post('/', upload.any(), async (req, res, next) => {
     try {
         const db = req.db;
-        const files = req.files;
+        const files: any = req.files;
         const reportId = req.body.reportId;
-        await uploadModel.savefile(db, files[0], reportId);
+        const path = `/usr/src/jrxml/${files[0].file_name}`;
+        await uploadModel.savefile(db, files[0], path, reportId);
         res.send({ ok: true, rows: files });
     } catch (error) {
         res.send({ ok: false, error: error });

@@ -79,6 +79,7 @@ export default class StandardModel {
 
   getWarehouses(knex: Knex) {
     return knex('wm_warehouses')
+      .select('warehouse_id', 'warehouse_name')
       .orderBy('warehouse_name');
   }
 
